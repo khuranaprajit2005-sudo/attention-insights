@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyzeUsernameRouteImport } from './routes/analyze.$username'
 import { Route as CheckoutUsernameRouteImport } from './routes/checkout.$username'
+import { Route as ReportUsernameRouteImport } from './routes/report.$username'
 import { Route as ResultUsernameRouteImport } from './routes/result.$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const CheckoutUsernameRoute = CheckoutUsernameRouteImport.update({
   path: '/checkout/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportUsernameRoute = ReportUsernameRouteImport.update({
+  id: '/report/$username',
+  path: '/report/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultUsernameRoute = ResultUsernameRouteImport.update({
   id: '/result/$username',
   path: '/result/$username',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyze/$username': typeof AnalyzeUsernameRoute
   '/checkout/$username': typeof CheckoutUsernameRoute
+  '/report/$username': typeof ReportUsernameRoute
   '/result/$username': typeof ResultUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyze/$username': typeof AnalyzeUsernameRoute
   '/checkout/$username': typeof CheckoutUsernameRoute
+  '/report/$username': typeof ReportUsernameRoute
   '/result/$username': typeof ResultUsernameRoute
 }
 export interface FileRoutesById {
@@ -52,19 +60,30 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analyze/$username': typeof AnalyzeUsernameRoute
   '/checkout/$username': typeof CheckoutUsernameRoute
+  '/report/$username': typeof ReportUsernameRoute
   '/result/$username': typeof ResultUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/analyze/$username' | '/checkout/$username' | '/result/$username'
+    | '/'
+    | '/analyze/$username'
+    | '/checkout/$username'
+    | '/report/$username'
+    | '/result/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyze/$username' | '/checkout/$username' | '/result/$username'
+  to:
+    | '/'
+    | '/analyze/$username'
+    | '/checkout/$username'
+    | '/report/$username'
+    | '/result/$username'
   id:
     | '__root__'
     | '/'
     | '/analyze/$username'
     | '/checkout/$username'
+    | '/report/$username'
     | '/result/$username'
   fileRoutesById: FileRoutesById
 }
@@ -72,6 +91,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzeUsernameRoute: typeof AnalyzeUsernameRoute
   CheckoutUsernameRoute: typeof CheckoutUsernameRoute
+  ReportUsernameRoute: typeof ReportUsernameRoute
   ResultUsernameRoute: typeof ResultUsernameRoute
 }
 
@@ -98,6 +118,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/report/$username': {
+      id: '/report/$username'
+      path: '/report/$username'
+      fullPath: '/report/$username'
+      preLoaderRoute: typeof ReportUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/result/$username': {
       id: '/result/$username'
       path: '/result/$username'
@@ -112,6 +139,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzeUsernameRoute: AnalyzeUsernameRoute,
   CheckoutUsernameRoute: CheckoutUsernameRoute,
+  ReportUsernameRoute: ReportUsernameRoute,
   ResultUsernameRoute: ResultUsernameRoute,
 }
 export const routeTree = rootRouteImport

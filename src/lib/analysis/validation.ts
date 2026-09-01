@@ -13,15 +13,15 @@ export function validateUsername(raw: string): ValidationResult {
   const trimmed = (raw ?? "").trim().replace(/^@+/, "");
 
   if (!trimmed) {
-    return { ok: false, error: "Username daalo pehle — bina username ke analysis nahi ho sakta." };
+    return { ok: false, error: "Please enter a username." };
   }
   if (trimmed.length > MAX_LENGTH) {
-    return { ok: false, error: `Ye username thoda zyada lamba hai (max ${MAX_LENGTH} characters).` };
+    return { ok: false, error: `Usernames can be up to ${MAX_LENGTH} characters.` };
   }
   if (!ALLOWED.test(trimmed)) {
     return {
       ok: false,
-      error: "Sirf letters, numbers, dot aur underscore allowed hain. Try again 🙂",
+      error: "Please enter a valid username — letters, numbers, dots and underscores only.",
     };
   }
 
