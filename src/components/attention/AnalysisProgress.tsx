@@ -8,7 +8,7 @@ export function AnalysisProgress({ progress, steps }: Props) {
     <div className="card-surface space-y-5 p-6">
       <div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Preparing your AI attention analysis...</span>
+          <span className="text-muted-foreground">Preparing your analysis...</span>
           <span className="font-display font-bold">{progress}%</span>
         </div>
         <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-secondary">

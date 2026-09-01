@@ -95,6 +95,12 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  :where(a, button, input, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+  }
+
   body {
     background-color: var(--color-background);
     background-image: var(--gradient-surface);
@@ -130,6 +136,7 @@
 }
 
 @utility btn-primary {
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -147,6 +154,20 @@
   transition:
     transform 0.15s ease,
     filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px) scale(0.99);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 @utility btn-secondary {
@@ -161,5 +182,16 @@
   background-color: var(--color-secondary);
   color: var(--color-secondary-foreground);
   font-weight: 600;
-  transition: background-color 0.15s ease;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in oklab, var(--color-secondary) 80%, var(--color-foreground) 6%);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
 }

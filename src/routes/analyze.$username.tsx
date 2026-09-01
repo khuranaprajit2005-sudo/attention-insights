@@ -8,10 +8,10 @@ import { validateUsername, formatHandle } from "@/lib/analysis/validation";
 
 const STEP_LABELS = [
   "Profile input received",
-  "Engagement signals prepared",
-  "Attention patterns analyzed",
-  "Social-interest model calculated",
-  "AI report generated",
+  "Analyzing attention signals",
+  "Calculating your score",
+  "Modelling social interest",
+  "Preparing your personalized report",
 ];
 
 const TOTAL_MS = 6400;
@@ -64,7 +64,7 @@ function AnalyzePage() {
   if (!validation.ok) {
     return (
       <Shell>
-        <ErrorMessage message={validation.error ?? "Ye username valid nahi hai."} />
+        <ErrorMessage message={validation.error ?? "Please enter a valid username."} />
         <Link to="/" className="btn-secondary mt-4 w-full">
           Try another username
         </Link>
@@ -75,7 +75,7 @@ function AnalyzePage() {
   if (failed) {
     return (
       <Shell>
-        <ErrorMessage message="Analysis complete nahi ho payi. Network issue lag raha hai — dobara try karo." />
+        <ErrorMessage message="We could not complete the analysis. Please check your connection and try again." />
         <button
           type="button"
           className="btn-primary mt-4"
@@ -107,7 +107,7 @@ function AnalyzePage() {
 
       {done ? (
         <div className="mt-5 space-y-3 text-center">
-          <p className="font-display text-xl font-bold">YOUR REPORT IS READY 🔥</p>
+          <p className="font-display text-xl font-bold">Your report is ready 🔥</p>
           <button
             type="button"
             className="btn-primary"
@@ -115,7 +115,7 @@ function AnalyzePage() {
               navigate({ to: "/result/$username", params: { username: validation.username! } })
             }
           >
-            SEE MY SCORE
+            See My Score
           </button>
         </div>
       ) : (

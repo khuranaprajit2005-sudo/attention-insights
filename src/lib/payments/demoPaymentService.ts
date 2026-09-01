@@ -54,7 +54,7 @@ export function initiatePayment(
       if (options.forceFailure) {
         resolve({
           status: "failed",
-          error: "Payment declined by the demo gateway. Koi paisa nahi kata — try again.",
+          error: "Payment was declined by the demo gateway. No money was charged — please try again.",
         });
         return;
       }
