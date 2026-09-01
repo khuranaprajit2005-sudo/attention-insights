@@ -14,12 +14,12 @@ export function ShareCard({ score, onShareClicked }: Props) {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
-        setNote("Copied! Ab paste karke bhejo 👀");
+        setNote("Copied to clipboard.");
         return;
       }
       throw new Error("no clipboard");
     } catch {
-      setNote("Copy nahi ho paya — text upar se manually copy kar lo.");
+      setNote("Copying is not available here — select and copy the text above.");
     }
   }
 
@@ -33,20 +33,20 @@ export function ShareCard({ score, onShareClicked }: Props) {
       }
       await copy();
     } catch {
-      setNote("Share cancel ho gaya.");
+      setNote("Sharing was cancelled.");
     }
   }
 
   return (
     <div className="card-surface space-y-4 p-6">
-      <h2 className="font-display text-lg font-bold">WANT TO SEE YOUR FRIEND'S SCORE? 👀</h2>
+      <h2 className="font-display text-lg font-bold">Apne friend ka score bhi check karo 👀</h2>
       <pre className="whitespace-pre-wrap rounded-2xl bg-secondary/60 p-4 text-sm font-sans">{text}</pre>
       <div className="flex flex-col gap-2 sm:flex-row">
         <button type="button" className="btn-secondary flex-1" onClick={copy}>
           Copy Result
         </button>
         <button type="button" className="btn-primary flex-1" onClick={share}>
-          SHARE MY RESULT
+          Share My Result
         </button>
       </div>
       {note ? <p className="text-center text-xs text-muted-foreground">{note}</p> : null}

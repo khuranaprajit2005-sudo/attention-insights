@@ -47,7 +47,7 @@ function ResultPage() {
       <div className="min-h-screen">
         <Header />
         <main className="mx-auto w-full max-w-md px-4 py-10">
-          <ErrorMessage message="Is username ka report load nahi ho paya. Ek valid username ke saath try karo." />
+          <ErrorMessage message="We could not load this result. Please try again with a valid username." />
           <Link to="/" className="btn-secondary mt-4 w-full">
             Go home
           </Link>
@@ -82,7 +82,7 @@ function ResultPage() {
 
         <div className="card-surface p-5 text-center">
           <p className="font-display text-lg font-bold">
-            WE FOUND {result.signalCount} STRONG ATTENTION SIGNALS
+            We found {result.signalCount} strong attention signals
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
             We identified {result.signalCount} strong attention signals in your demo analysis.

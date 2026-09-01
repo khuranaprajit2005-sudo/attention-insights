@@ -32,7 +32,7 @@ function CheckoutPage() {
       <div className="min-h-screen">
         <Header />
         <main className="mx-auto w-full max-w-md px-4 py-10">
-          <ErrorMessage message="Checkout open nahi ho paya — username valid nahi hai." />
+          <ErrorMessage message="We could not open checkout. Please start again with a valid username." />
           <Link to="/" className="btn-secondary mt-4 w-full">
             Go home
           </Link>

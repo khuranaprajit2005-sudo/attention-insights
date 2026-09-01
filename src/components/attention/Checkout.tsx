@@ -42,7 +42,7 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
       const verified = await verifyPayment(result);
       if (!verified) {
         setStatus("failed");
-        setError(result.error ?? "Payment complete nahi hua. Try again.");
+        setError(result.error ?? "We could not complete the payment. Please try again.");
         onPaymentFailed?.();
         return;
       }
@@ -50,7 +50,7 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
       setTimeout(() => onPaid(result.paymentId!), 900);
     } catch {
       setStatus("failed");
-      setError("Network issue lag raha hai. Thodi der baad try karo.");
+      setError("Something went wrong while processing the payment. Please try again.");
       onPaymentFailed?.();
     }
   }
@@ -115,7 +115,7 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
       <button type="button" className="btn-primary" onClick={pay} disabled={status === "processing" || status === "success"}>
         {status === "processing"
           ? "Processing payment..."
-          : `PAY ${formatPrice(session.amountInPaise)}`}
+          : `Pay ${formatPrice(session.amountInPaise)}`}
       </button>
 
       <button
