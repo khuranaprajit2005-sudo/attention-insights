@@ -75,7 +75,7 @@ function AnalyzePage() {
   if (failed) {
     return (
       <Shell>
-        <ErrorMessage message="We couldn&rsquo;t complete the analysis. Please check your connection and try again." />
+        <ErrorMessage message="We could not complete the analysis. Please check your connection and try again." />
         <button
           type="button"
           className="btn-primary mt-4"
