@@ -1,4 +1,4 @@
-import { formatPrice, PRICE_IN_PAISE } from "@/lib/payments/demoPaymentService";
+import { formatPrice, PRICE_IN_PAISE } from "@/lib/payments/pricing";
 
 const LOCKED = [
   { title: "Detailed attention breakdown", detail: "All five signal dimensions, scored." },

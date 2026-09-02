@@ -35,3 +35,28 @@ export interface AnalysisResult {
   overview: string;
   isDemoData: true;
 }
+
+/** The teaser payload — the ONLY analysis data sent to the browser pre-payment. */
+export interface FreeReport {
+  analysisId: string;
+  username: string; // normalized, with leading @
+  score: number;
+  tier: { label: string; emoji: string };
+  dimensions: {
+    engagement: number;
+    recency: number;
+    frequency: number;
+    consistency: number;
+  };
+  momentumPercent: number;
+  signalCount: number;
+  previewAccount: DemoAccount;
+  lockedAccountCount: number;
+  unlocked: boolean;
+  isDemoData: true;
+}
+
+/** Server response for a paid report request. */
+export type ReportAccessResponse =
+  | { unlocked: false }
+  | { unlocked: true; report: AnalysisResult & { analysisId: string } };
