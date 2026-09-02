@@ -5,6 +5,8 @@ import { AnalysisProgress } from "@/components/attention/AnalysisProgress";
 import { ErrorMessage } from "@/components/attention/ErrorMessage";
 import { track } from "@/lib/analytics";
 import { validateUsername, formatHandle } from "@/lib/analysis/validation";
+import { startAnalysis } from "@/lib/attention.functions";
+import { getSessionToken, setSessionToken } from "@/lib/session";
 
 const STEP_LABELS = [
   "Profile input received",
@@ -39,27 +41,52 @@ function AnalyzePage() {
   const navigate = useNavigate();
   const validation = validateUsername(username);
   const [progress, setProgress] = useState(0);
-  const [failed, setFailed] = useState(false);
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const startedAt = useRef<number>(0);
 
   useEffect(() => {
     if (!validation.ok) return;
+    let cancelled = false;
+
     track("analysis_started", { username });
     startedAt.current = Date.now();
+    setProgress(0);
+    setAnalysisId(null);
 
     const interval = window.setInterval(() => {
       const elapsed = Date.now() - startedAt.current;
       const next = Math.min(100, Math.round((elapsed / TOTAL_MS) * 100));
       setProgress(next);
-      if (next >= 100) {
-        window.clearInterval(interval);
-        track("analysis_completed", { username });
-      }
+      if (next >= 100) window.clearInterval(interval);
     }, 120);
 
-    return () => window.clearInterval(interval);
+    // The analysis itself runs server-side; the progress bar is presentation.
+    startAnalysis({ data: { username, sessionToken: getSessionToken() } })
+      .then((res) => {
+        if (cancelled) return;
+        setSessionToken(res.sessionToken);
+        setAnalysisId(res.analysisId);
+        track("analysis_completed", { username, analysisId: res.analysisId });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        window.clearInterval(interval);
+        setFailed(
+          error instanceof Error && error.message
+            ? error.message
+            : "We could not complete the analysis. Please try again.",
+        );
+        track("analysis_failed", { username });
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username, validation.ok]);
+  }, [username, validation.ok, attempt]);
 
   if (!validation.ok) {
     return (
@@ -75,14 +102,13 @@ function AnalyzePage() {
   if (failed) {
     return (
       <Shell>
-        <ErrorMessage message="We could not complete the analysis. Please check your connection and try again." />
+        <ErrorMessage message={failed} />
         <button
           type="button"
           className="btn-primary mt-4"
           onClick={() => {
-            setFailed(false);
-            setProgress(0);
-            startedAt.current = Date.now();
+            setFailed(null);
+            setAttempt((a) => a + 1);
           }}
         >
           Retry analysis
@@ -91,7 +117,7 @@ function AnalyzePage() {
     );
   }
 
-  const done = progress >= 100;
+  const done = progress >= 100 && analysisId !== null;
   const stepsDone = Math.floor((progress / 100) * STEP_LABELS.length);
 
   return (
@@ -111,22 +137,12 @@ function AnalyzePage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() =>
-              navigate({ to: "/result/$username", params: { username: validation.username! } })
-            }
+            onClick={() => navigate({ to: "/result/$analysisId", params: { analysisId } })}
           >
             See My Score
           </button>
         </div>
-      ) : (
-        <button
-          type="button"
-          className="mt-4 w-full text-center text-xs text-muted-foreground underline underline-offset-4"
-          onClick={() => setFailed(true)}
-        >
-          QA: simulate analysis failure
-        </button>
-      )}
+      ) : null}
     </Shell>
   );
 }

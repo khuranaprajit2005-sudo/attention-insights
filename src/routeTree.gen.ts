@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyzeUsernameRouteImport } from './routes/analyze.$username'
-import { Route as CheckoutUsernameRouteImport } from './routes/checkout.$username'
-import { Route as ReportUsernameRouteImport } from './routes/report.$username'
-import { Route as ResultUsernameRouteImport } from './routes/result.$username'
+import { Route as CheckoutAnalysisIdRouteImport } from './routes/checkout.$analysisId'
+import { Route as ReportAnalysisIdRouteImport } from './routes/report.$analysisId'
+import { Route as ResultAnalysisIdRouteImport } from './routes/result.$analysisId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -25,74 +25,74 @@ const AnalyzeUsernameRoute = AnalyzeUsernameRouteImport.update({
   path: '/analyze/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CheckoutUsernameRoute = CheckoutUsernameRouteImport.update({
-  id: '/checkout/$username',
-  path: '/checkout/$username',
+const CheckoutAnalysisIdRoute = CheckoutAnalysisIdRouteImport.update({
+  id: '/checkout/$analysisId',
+  path: '/checkout/$analysisId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReportUsernameRoute = ReportUsernameRouteImport.update({
-  id: '/report/$username',
-  path: '/report/$username',
+const ReportAnalysisIdRoute = ReportAnalysisIdRouteImport.update({
+  id: '/report/$analysisId',
+  path: '/report/$analysisId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResultUsernameRoute = ResultUsernameRouteImport.update({
-  id: '/result/$username',
-  path: '/result/$username',
+const ResultAnalysisIdRoute = ResultAnalysisIdRouteImport.update({
+  id: '/result/$analysisId',
+  path: '/result/$analysisId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyze/$username': typeof AnalyzeUsernameRoute
-  '/checkout/$username': typeof CheckoutUsernameRoute
-  '/report/$username': typeof ReportUsernameRoute
-  '/result/$username': typeof ResultUsernameRoute
+  '/checkout/$analysisId': typeof CheckoutAnalysisIdRoute
+  '/report/$analysisId': typeof ReportAnalysisIdRoute
+  '/result/$analysisId': typeof ResultAnalysisIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyze/$username': typeof AnalyzeUsernameRoute
-  '/checkout/$username': typeof CheckoutUsernameRoute
-  '/report/$username': typeof ReportUsernameRoute
-  '/result/$username': typeof ResultUsernameRoute
+  '/checkout/$analysisId': typeof CheckoutAnalysisIdRoute
+  '/report/$analysisId': typeof ReportAnalysisIdRoute
+  '/result/$analysisId': typeof ResultAnalysisIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analyze/$username': typeof AnalyzeUsernameRoute
-  '/checkout/$username': typeof CheckoutUsernameRoute
-  '/report/$username': typeof ReportUsernameRoute
-  '/result/$username': typeof ResultUsernameRoute
+  '/checkout/$analysisId': typeof CheckoutAnalysisIdRoute
+  '/report/$analysisId': typeof ReportAnalysisIdRoute
+  '/result/$analysisId': typeof ResultAnalysisIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/analyze/$username'
-    | '/checkout/$username'
-    | '/report/$username'
-    | '/result/$username'
+    | '/checkout/$analysisId'
+    | '/report/$analysisId'
+    | '/result/$analysisId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/analyze/$username'
-    | '/checkout/$username'
-    | '/report/$username'
-    | '/result/$username'
+    | '/checkout/$analysisId'
+    | '/report/$analysisId'
+    | '/result/$analysisId'
   id:
     | '__root__'
     | '/'
     | '/analyze/$username'
-    | '/checkout/$username'
-    | '/report/$username'
-    | '/result/$username'
+    | '/checkout/$analysisId'
+    | '/report/$analysisId'
+    | '/result/$analysisId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzeUsernameRoute: typeof AnalyzeUsernameRoute
-  CheckoutUsernameRoute: typeof CheckoutUsernameRoute
-  ReportUsernameRoute: typeof ReportUsernameRoute
-  ResultUsernameRoute: typeof ResultUsernameRoute
+  CheckoutAnalysisIdRoute: typeof CheckoutAnalysisIdRoute
+  ReportAnalysisIdRoute: typeof ReportAnalysisIdRoute
+  ResultAnalysisIdRoute: typeof ResultAnalysisIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -111,25 +111,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalyzeUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checkout/$username': {
-      id: '/checkout/$username'
-      path: '/checkout/$username'
-      fullPath: '/checkout/$username'
-      preLoaderRoute: typeof CheckoutUsernameRouteImport
+    '/checkout/$analysisId': {
+      id: '/checkout/$analysisId'
+      path: '/checkout/$analysisId'
+      fullPath: '/checkout/$analysisId'
+      preLoaderRoute: typeof CheckoutAnalysisIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/report/$username': {
-      id: '/report/$username'
-      path: '/report/$username'
-      fullPath: '/report/$username'
-      preLoaderRoute: typeof ReportUsernameRouteImport
+    '/report/$analysisId': {
+      id: '/report/$analysisId'
+      path: '/report/$analysisId'
+      fullPath: '/report/$analysisId'
+      preLoaderRoute: typeof ReportAnalysisIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/result/$username': {
-      id: '/result/$username'
-      path: '/result/$username'
-      fullPath: '/result/$username'
-      preLoaderRoute: typeof ResultUsernameRouteImport
+    '/result/$analysisId': {
+      id: '/result/$analysisId'
+      path: '/result/$analysisId'
+      fullPath: '/result/$analysisId'
+      preLoaderRoute: typeof ResultAnalysisIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -138,9 +138,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzeUsernameRoute: AnalyzeUsernameRoute,
-  CheckoutUsernameRoute: CheckoutUsernameRoute,
-  ReportUsernameRoute: ReportUsernameRoute,
-  ResultUsernameRoute: ResultUsernameRoute,
+  CheckoutAnalysisIdRoute: CheckoutAnalysisIdRoute,
+  ReportAnalysisIdRoute: ReportAnalysisIdRoute,
+  ResultAnalysisIdRoute: ResultAnalysisIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

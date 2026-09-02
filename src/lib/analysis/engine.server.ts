@@ -133,7 +133,7 @@ export function generateReport(username: string, dimensions: Dimensions): Analys
     signalCount: pick(username, "signals", 4, 11),
     topAccounts: buildDemoAccounts(username, score),
     relationshipInterest: clamp(pick(username, "relationship", 52, 92)),
-    attentionType: ATTENTION_TYPES[pick(username, "type", 0, ATTENTION_TYPES.length - 1)],
+    attentionType: ATTENTION_TYPES[pick(username, "type", 0, ATTENTION_TYPES.length - 1)]!,
     overview: `${handle} scores ${score}/100 on the AttentionAI demo model. ${tier.label} ${tier.emoji} — your engagement (${dimensions.engagement}) and recency (${dimensions.recency}) signals are doing most of the heavy lifting, while consistency (${dimensions.consistency}) is the easiest thing for you to improve. This is an AI interpretation of demo signals, not verified profile-visit data.`,
     isDemoData: true,
   };

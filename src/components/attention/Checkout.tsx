@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  createCheckoutSession,
-  formatPrice,
-  initiatePayment,
-  verifyPayment,
-  type PaymentMethod,
-} from "@/lib/payments/demoPaymentService";
+import { formatPrice, PRICE_IN_PAISE, type PaymentMethod } from "@/lib/payments/pricing";
 import { ErrorMessage } from "./ErrorMessage";
 
 const METHODS: { id: PaymentMethod; label: string; hint: string }[] = [
@@ -18,18 +12,29 @@ type Status = "idle" | "processing" | "success" | "failed";
 
 interface Props {
   username: string;
-  onPaid: (paymentId: string) => void;
+  /** Server call. The server — not this component — decides if payment succeeded. */
+  onPay: (
+    method: PaymentMethod,
+    simulateFailure: boolean,
+  ) => Promise<{ status: "paid" } | { status: "failed"; error: string }>;
+  onPaid: () => void;
   onCancel: () => void;
   onPaymentStarted?: (method: PaymentMethod) => void;
   onPaymentFailed?: () => void;
 }
 
-export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPaymentFailed }: Props) {
+export function Checkout({
+  username,
+  onPay,
+  onPaid,
+  onCancel,
+  onPaymentStarted,
+  onPaymentFailed,
+}: Props) {
   const [method, setMethod] = useState<PaymentMethod>("upi");
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [simulateFailure, setSimulateFailure] = useState(false);
-  const session = createCheckoutSession(username);
 
   async function pay() {
     if (status === "processing") return;
@@ -38,16 +43,15 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
     onPaymentStarted?.(method);
 
     try {
-      const result = await initiatePayment(session, method, { forceFailure: simulateFailure });
-      const verified = await verifyPayment(result);
-      if (!verified) {
+      const result = await onPay(method, simulateFailure);
+      if (result.status !== "paid") {
         setStatus("failed");
-        setError(result.error ?? "We could not complete the payment. Please try again.");
+        setError(result.error);
         onPaymentFailed?.();
         return;
       }
       setStatus("success");
-      setTimeout(() => onPaid(result.paymentId!), 900);
+      setTimeout(() => onPaid(), 900);
     } catch {
       setStatus("failed");
       setError("Something went wrong while processing the payment. Please try again.");
@@ -64,10 +68,10 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
 
       <div className="flex items-start justify-between gap-3 rounded-2xl bg-secondary/60 p-4">
         <div>
-          <p className="font-semibold">{session.productName}</p>
+          <p className="font-semibold">Full AI Social Attention Report</p>
           <p className="text-xs text-muted-foreground">for @{username}</p>
         </div>
-        <span className="font-display text-xl font-bold">{formatPrice(session.amountInPaise)}</span>
+        <span className="font-display text-xl font-bold">{formatPrice(PRICE_IN_PAISE)}</span>
       </div>
 
       <fieldset className="space-y-2" disabled={status === "processing" || status === "success"}>
@@ -95,14 +99,16 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
         ))}
       </fieldset>
 
-      <label className="flex items-center gap-2 text-xs text-muted-foreground">
-        <input
-          type="checkbox"
-          checked={simulateFailure}
-          onChange={(e) => setSimulateFailure(e.target.checked)}
-        />
-        QA: simulate a payment failure
-      </label>
+      {import.meta.env.DEV ? (
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={simulateFailure}
+            onChange={(e) => setSimulateFailure(e.target.checked)}
+          />
+          QA (dev only): simulate a payment failure
+        </label>
+      ) : null}
 
       {error ? <ErrorMessage message={error} /> : null}
 
@@ -115,7 +121,7 @@ export function Checkout({ username, onPaid, onCancel, onPaymentStarted, onPayme
       <button type="button" className="btn-primary" onClick={pay} disabled={status === "processing" || status === "success"}>
         {status === "processing"
           ? "Processing payment..."
-          : `Pay ${formatPrice(session.amountInPaise)}`}
+          : `Pay ${formatPrice(PRICE_IN_PAISE)}`}
       </button>
 
       <button
