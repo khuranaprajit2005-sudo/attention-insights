@@ -12,7 +12,7 @@ import { validateUsername } from "@/lib/analysis/validation";
 import { hasReportAccess } from "@/lib/entitlements";
 import { track } from "@/lib/analytics";
 
-export const Route = createFileRoute("/report/$username")({
+export const Route = createFileRoute("/report/$analysisId")({
   head: () => ({
     meta: [
       { title: "Your Complete Social Attention Report — AttentionAI" },

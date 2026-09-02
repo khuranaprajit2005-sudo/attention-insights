@@ -10,7 +10,7 @@ import { runAnalysis } from "@/lib/analysis/engine";
 import { validateUsername } from "@/lib/analysis/validation";
 import { track } from "@/lib/analytics";
 
-export const Route = createFileRoute("/result/$username")({
+export const Route = createFileRoute("/result/$analysisId")({
   head: () => ({
     meta: [
       { title: "Your AI Attention Score — AttentionAI" },
