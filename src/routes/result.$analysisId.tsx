@@ -108,16 +108,24 @@ function ResultPage() {
           <h2 className="font-display text-base font-bold">Top attention accounts (demo)</h2>
           <AccountCard account={result.previewAccount} />
           {Array.from({ length: result.lockedAccountCount }).map((_, i) => (
-            <AccountCard
+            <div
               key={`locked-${i}`}
-              account={{
-                handle: "@locked_account",
-                score: 0,
-                label: "Unlock to reveal this signal",
-                emoji: "🔒",
-              }}
-              blurred
-            />
+              className="card-surface flex items-center gap-3 p-4"
+              aria-label="Locked attention signal"
+            >
+              <span
+                aria-hidden
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-base"
+              >
+                🔒
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="select-none truncate font-semibold blur-[6px]">@hidden_account</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  Unlock the full report to reveal this signal.
+                </p>
+              </div>
+            </div>
           ))}
           <p className="text-xs text-muted-foreground">
             Demo identities only. This does not mean these accounts visited your profile.
