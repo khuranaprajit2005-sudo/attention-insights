@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/attention/Header";
 import { ScoreCard } from "@/components/attention/ScoreCard";
 import { SignalCard } from "@/components/attention/SignalCard";
@@ -7,9 +7,9 @@ import { AccountCard } from "@/components/attention/AccountCard";
 import { ReportSection } from "@/components/attention/ReportSection";
 import { ShareCard } from "@/components/attention/ShareCard";
 import { ErrorMessage } from "@/components/attention/ErrorMessage";
-import { runAnalysis } from "@/lib/analysis/engine";
-import { validateUsername } from "@/lib/analysis/validation";
-import { hasReportAccess } from "@/lib/entitlements";
+import { getFullReport } from "@/lib/attention.functions";
+import { getSessionToken } from "@/lib/session";
+import type { AnalysisResult } from "@/lib/analysis/types";
 import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/report/$analysisId")({
@@ -32,26 +32,42 @@ export const Route = createFileRoute("/report/$analysisId")({
 });
 
 function ReportPage() {
-  const { username } = Route.useParams();
+  const { analysisId } = Route.useParams();
   const navigate = useNavigate();
-  const validation = validateUsername(username);
-  const result = useMemo(
-    () => (validation.ok ? runAnalysis(validation.username!) : null),
-    [validation.ok, validation.username],
-  );
-  const [unlocked, setUnlocked] = useState<boolean | null>(null);
+  const [state, setState] = useState<
+    { kind: "loading" } | { kind: "locked" } | { kind: "error"; message: string } | { kind: "ready"; report: AnalysisResult }
+  >({ kind: "loading" });
 
   useEffect(() => {
-    if (!validation.ok) return;
-    const access = hasReportAccess(validation.username!);
-    setUnlocked(access);
-    if (access) track("report_viewed", { username: validation.username! });
-  }, [validation.ok, validation.username]);
+    let cancelled = false;
+    getFullReport({ data: { analysisId, sessionToken: getSessionToken() } })
+      .then((data) => {
+        if (cancelled) return;
+        if (!data.unlocked) {
+          setState({ kind: "locked" });
+          return;
+        }
+        setState({ kind: "ready", report: data.report });
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setState({
+          kind: "error",
+          message:
+            e instanceof Error && e.message
+              ? e.message
+              : "We could not load this report. Please start a new analysis.",
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [analysisId]);
 
-  if (!result) {
+  if (state.kind === "error") {
     return (
       <Shell>
-        <ErrorMessage message="We couldn't load this report. Please try again with a valid username." />
+        <ErrorMessage message={state.message} />
         <Link to="/" className="btn-secondary mt-4 w-full">
           Back to home
         </Link>
@@ -59,7 +75,7 @@ function ReportPage() {
     );
   }
 
-  if (unlocked === null) {
+  if (state.kind === "loading") {
     return (
       <Shell>
         <p className="text-center text-sm text-muted-foreground">Loading your report...</p>
@@ -67,7 +83,7 @@ function ReportPage() {
     );
   }
 
-  if (!unlocked) {
+  if (state.kind === "locked") {
     return (
       <Shell>
         <div className="card-surface space-y-4 p-6 text-center">
@@ -78,9 +94,7 @@ function ReportPage() {
           <button
             type="button"
             className="btn-primary"
-            onClick={() =>
-              navigate({ to: "/checkout/$username", params: { username: validation.username! } })
-            }
+            onClick={() => navigate({ to: "/checkout/$analysisId", params: { analysisId } })}
           >
             Unlock Full Report — ₹99
           </button>
@@ -88,6 +102,8 @@ function ReportPage() {
       </Shell>
     );
   }
+
+  const result = state.report;
 
   return (
     <div className="min-h-screen">
@@ -164,7 +180,10 @@ function ReportPage() {
           </div>
         </ReportSection>
 
-        <ShareCard score={result.score} onShareClicked={() => track("share_clicked", { username })} />
+        <ShareCard
+          score={result.score}
+          onShareClicked={() => track("share_clicked", { analysisId })}
+        />
 
         <Link to="/" className="btn-secondary w-full">
           Analyze another username
