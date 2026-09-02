@@ -1,13 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/attention/Header";
 import { ScoreCard } from "@/components/attention/ScoreCard";
 import { SignalCard } from "@/components/attention/SignalCard";
 import { AccountCard } from "@/components/attention/AccountCard";
 import { Paywall } from "@/components/attention/Paywall";
 import { ErrorMessage } from "@/components/attention/ErrorMessage";
-import { runAnalysis } from "@/lib/analysis/engine";
-import { validateUsername } from "@/lib/analysis/validation";
+import { getFreeResult } from "@/lib/attention.functions";
+import { getSessionToken } from "@/lib/session";
+import type { FreeReport } from "@/lib/analysis/types";
 import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/result/$analysisId")({
@@ -30,29 +31,48 @@ export const Route = createFileRoute("/result/$analysisId")({
 });
 
 function ResultPage() {
-  const { username } = Route.useParams();
+  const { analysisId } = Route.useParams();
   const navigate = useNavigate();
-  const validation = validateUsername(username);
-  const result = useMemo(
-    () => (validation.ok ? runAnalysis(validation.username!) : null),
-    [validation.ok, validation.username],
-  );
+  const [result, setResult] = useState<FreeReport | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (result) track("free_result_viewed", { username, score: result.score });
-  }, [result, username]);
+    let cancelled = false;
+    getFreeResult({ data: { analysisId, sessionToken: getSessionToken() } })
+      .then((data) => {
+        if (cancelled) return;
+        setResult(data);
+        track("free_result_viewed", { analysisId, score: data.score });
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setError(
+          e instanceof Error && e.message
+            ? e.message
+            : "We could not load this result. Please start a new analysis.",
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [analysisId]);
+
+  if (error) {
+    return (
+      <Shell>
+        <ErrorMessage message={error} />
+        <Link to="/" className="btn-secondary mt-4 w-full">
+          Go home
+        </Link>
+      </Shell>
+    );
+  }
 
   if (!result) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <main className="mx-auto w-full max-w-md px-4 py-10">
-          <ErrorMessage message="We could not load this result. Please try again with a valid username." />
-          <Link to="/" className="btn-secondary mt-4 w-full">
-            Go home
-          </Link>
-        </main>
-      </div>
+      <Shell>
+        <p className="text-center text-sm text-muted-foreground">Loading your result...</p>
+      </Shell>
     );
   }
 
@@ -73,12 +93,7 @@ function ResultPage() {
           <SignalCard label="Interaction Frequency" value={result.dimensions.frequency} />
           <SignalCard label="Consistency" value={result.dimensions.consistency} />
         </div>
-        <SignalCard
-          label="Momentum"
-          value={result.momentumPercent}
-          suffix="%"
-          showBar={false}
-        />
+        <SignalCard label="Momentum" value={result.momentumPercent} suffix="%" showBar={false} />
 
         <div className="card-surface p-5 text-center">
           <p className="font-display text-lg font-bold">
@@ -91,21 +106,50 @@ function ResultPage() {
 
         <section className="space-y-3">
           <h2 className="font-display text-base font-bold">Top attention accounts (demo)</h2>
-          {result.topAccounts.map((account, i) => (
-            <AccountCard key={account.handle} account={account} blurred={i > 0} />
+          <AccountCard account={result.previewAccount} />
+          {Array.from({ length: result.lockedAccountCount }).map((_, i) => (
+            <AccountCard
+              key={`locked-${i}`}
+              account={{
+                handle: "@locked_account",
+                score: 0,
+                label: "Unlock to reveal this signal",
+                emoji: "🔒",
+              }}
+              blurred
+            />
           ))}
           <p className="text-xs text-muted-foreground">
             Demo identities only. This does not mean these accounts visited your profile.
           </p>
         </section>
 
-        <Paywall
-          onUnlock={() => {
-            track("checkout_started", { username: validation.username! });
-            navigate({ to: "/checkout/$username", params: { username: validation.username! } });
-          }}
-        />
+        {result.unlocked ? (
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => navigate({ to: "/report/$analysisId", params: { analysisId } })}
+          >
+            View Full Report
+          </button>
+        ) : (
+          <Paywall
+            onUnlock={() => {
+              track("checkout_started", { analysisId });
+              navigate({ to: "/checkout/$analysisId", params: { analysisId } });
+            }}
+          />
+        )}
       </main>
+    </div>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <main className="mx-auto w-full max-w-md px-4 py-10">{children}</main>
     </div>
   );
 }
