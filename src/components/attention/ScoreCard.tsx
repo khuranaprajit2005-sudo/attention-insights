@@ -1,26 +1,24 @@
 interface Props {
   score: number;
   label: string;
-  emoji: string;
   handle: string;
+  caption?: string;
 }
 
-export function ScoreCard({ score, label, emoji, handle }: Props) {
-  const radius = 66;
+export function ScoreCard({ score, label, handle, caption }: Props) {
+  const radius = 68;
   const circumference = 2 * Math.PI * radius;
   const dash = (Math.max(0, Math.min(100, score)) / 100) * circumference;
 
   return (
-    <div className="card-surface flex flex-col items-center gap-3 p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Your attention score
-      </p>
-      <div className="relative size-40">
+    <div className="card-surface bg-warm rise-in flex flex-col items-center gap-3 p-7 text-center">
+      <p className="eyebrow">Attention score</p>
+      <div className="relative size-44">
         <svg viewBox="0 0 160 160" className="size-full -rotate-90">
           <defs>
             <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="oklch(0.68 0.24 12)" />
-              <stop offset="100%" stopColor="oklch(0.8 0.17 72)" />
+              <stop offset="0%" stopColor="var(--primary)" />
+              <stop offset="100%" stopColor="var(--accent-foreground)" />
             </linearGradient>
           </defs>
           <circle
@@ -28,8 +26,8 @@ export function ScoreCard({ score, label, emoji, handle }: Props) {
             cy="80"
             r={radius}
             fill="none"
-            stroke="var(--color-secondary)"
-            strokeWidth="12"
+            stroke="color-mix(in oklab, var(--foreground) 10%, transparent)"
+            strokeWidth="9"
           />
           <circle
             cx="80"
@@ -37,23 +35,21 @@ export function ScoreCard({ score, label, emoji, handle }: Props) {
             r={radius}
             fill="none"
             stroke="url(#scoreGradient)"
-            strokeWidth="12"
+            strokeWidth="9"
             strokeLinecap="round"
             strokeDasharray={`${dash} ${circumference}`}
-            style={{ transition: "stroke-dasharray 900ms ease-out" }}
+            style={{ transition: "stroke-dasharray 1100ms cubic-bezier(0.22,1,0.36,1)" }}
           />
         </svg>
         <div className="absolute inset-0 grid place-items-center">
-          <div className="text-center">
-            <span className="font-display text-4xl font-bold">{score}</span>
-            <span className="text-sm text-muted-foreground">/100</span>
+          <div>
+            <span className="font-display text-[3.1rem] font-semibold leading-none">{score}</span>
+            <span className="ml-0.5 text-sm text-muted-foreground">/100</span>
           </div>
         </div>
       </div>
-      <p className="font-display text-lg font-bold">
-        {emoji} {label}
-      </p>
-      <p className="text-xs text-muted-foreground">Demo analysis for {handle}</p>
+      <p className="font-display text-lg font-semibold">{label}</p>
+      <p className="text-xs text-muted-foreground">{caption ?? `Reading for ${handle}`}</p>
     </div>
   );
 }
