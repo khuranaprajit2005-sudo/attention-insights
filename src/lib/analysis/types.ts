@@ -17,9 +17,13 @@ export interface Dimensions {
 
 export interface DemoAccount {
   handle: string;
+  /** Display name derived from the demo handle. Paid data — never in free payloads. */
+  name: string;
   score: number;
   label: string;
   emoji: string;
+  connectionType: string;
+  hook: string;
 }
 
 export interface AnalysisResult {
@@ -50,7 +54,9 @@ export interface FreeReport {
   };
   momentumPercent: number;
   signalCount: number;
-  previewAccount: DemoAccount;
+  /** ONLY the first initial of the ranked #1 account — no names leave the server. */
+  topInitial: string;
+  topScore: number;
   lockedAccountCount: number;
   unlocked: boolean;
   isDemoData: true;

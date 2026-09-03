@@ -8,7 +8,7 @@ interface Props {
   ctaLabel?: string;
 }
 
-export function UsernameForm({ onSubmit, submitting = false, ctaLabel = "Check Your Score" }: Props) {
+export function UsernameForm({ onSubmit, submitting = false, ctaLabel = "Reveal My Score" }: Props) {
   const inputId = useId();
   const errorId = `${inputId}-error`;
   const [value, setValue] = useState("");
@@ -27,12 +27,12 @@ export function UsernameForm({ onSubmit, submitting = false, ctaLabel = "Check Y
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-3 text-left" noValidate>
-      <label htmlFor={inputId} className="block text-sm font-medium text-foreground">
+    <form onSubmit={handleSubmit} className="w-full space-y-3.5 text-left" noValidate>
+      <label htmlFor={inputId} className="block text-sm font-medium">
         Instagram username
       </label>
 
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-input/60 px-4 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-ring/40">
+      <div className="flex items-center gap-1 rounded-2xl border border-border bg-input px-4 transition-all focus-within:border-ring focus-within:ring-4 focus-within:ring-ring/15">
         <span aria-hidden className="text-muted-foreground">
           @
         </span>
@@ -43,7 +43,7 @@ export function UsernameForm({ onSubmit, submitting = false, ctaLabel = "Check Y
             setValue(e.target.value);
             if (error) setError(null);
           }}
-          placeholder="Enter your Instagram username"
+          placeholder="yourusername"
           inputMode="text"
           autoCapitalize="none"
           autoCorrect="off"
@@ -51,7 +51,7 @@ export function UsernameForm({ onSubmit, submitting = false, ctaLabel = "Check Y
           maxLength={40}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
-          className="h-14 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
+          className="h-14 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground/70"
         />
       </div>
 
@@ -62,12 +62,10 @@ export function UsernameForm({ onSubmit, submitting = false, ctaLabel = "Check Y
       ) : null}
 
       <button type="submit" className="btn-primary" disabled={submitting}>
-        {submitting ? "Starting analysis..." : ctaLabel}
+        {submitting ? "Starting analysis…" : ctaLabel}
       </button>
 
-      <p className="text-center text-xs text-muted-foreground">
-        Username only — no password required.
-      </p>
+      <p className="text-center text-xs text-muted-foreground">🔒 No Instagram password required</p>
     </form>
   );
 }
