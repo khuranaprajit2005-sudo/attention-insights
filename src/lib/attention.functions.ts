@@ -163,7 +163,9 @@ export const startAnalysis = createServerFn({ method: "POST" })
         },
         momentumPercent: result.momentumPercent,
         signalCount: result.signalCount,
-        previewAccount,
+        // Only the initial of the ranked #1 account is ever exposed pre-payment.
+        topInitial: previewAccount.name.charAt(0).toUpperCase(),
+        topScore: previewAccount.score,
         lockedAccountCount: lockedAccounts.length,
       };
 
@@ -218,9 +220,28 @@ export const getFreeResult = createServerFn({ method: "POST" })
 
       const unlocked = await hasEntitlement(ctx, data.analysisId, sessionId);
 
+      // Tolerate free payloads written by the earlier prototype shape, while
+      // guaranteeing no paid identity data is forwarded to the browser.
+      const fp = row.free_payload as unknown as Record<string, unknown>;
+      const legacyPreview = fp["previewAccount"] as { handle?: string; score?: number } | undefined;
+      const topInitial =
+        (fp["topInitial"] as string | undefined) ??
+        (legacyPreview?.handle?.replace(/^@/, "").charAt(0) ?? "").toUpperCase() ??
+        "";
+      const topScore =
+        (fp["topScore"] as number | undefined) ?? legacyPreview?.score ?? (fp["score"] as number);
+
       return {
-        ...(row.free_payload as unknown as Omit<FreeReport, "analysisId" | "unlocked" | "isDemoData">),
         analysisId: data.analysisId,
+        username: fp["username"] as string,
+        score: fp["score"] as number,
+        tier: fp["tier"] as FreeReport["tier"],
+        dimensions: fp["dimensions"] as FreeReport["dimensions"],
+        momentumPercent: fp["momentumPercent"] as number,
+        signalCount: fp["signalCount"] as number,
+        topInitial,
+        topScore,
+        lockedAccountCount: (fp["lockedAccountCount"] as number | undefined) ?? 0,
         unlocked,
         isDemoData: true,
       };
