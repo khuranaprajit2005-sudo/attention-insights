@@ -79,20 +79,44 @@ const DEMO_HANDLES = [
   "zoya",
 ];
 
+/** Playful, non-clinical connection framings. Never asserts feelings or intent. */
+const CONNECTION_TYPES = [
+  "The Unfinished Story 👀",
+  "The Silent Observer",
+  "The Unexpected One",
+  "The Familiar Face",
+  "The Lowkey Admirer",
+];
+
+const HOOKS = [
+  "Shows up more often than you'd expect.",
+  "Quiet, but consistently around.",
+  "Turns up right after you post.",
+  "Never far from your recent activity.",
+  "Keeps circling back.",
+];
+
+/** Deterministic stride: index 0 stays identical to the previous model. */
+const ACCOUNT_STRIDE = [1, 3, 5, 7, 9];
+
 function buildDemoAccounts(username: string, score: number): DemoAccount[] {
   const offset = pick(username, "accounts", 0, DEMO_HANDLES.length - 1);
-  return [0, 1, 2].map((i) => {
-    const handle = DEMO_HANDLES[(offset + i * 3 + 1) % DEMO_HANDLES.length];
+  return ACCOUNT_STRIDE.map((stride, i) => {
+    const handle = DEMO_HANDLES[(offset + stride) % DEMO_HANDLES.length]!;
     const accountScore = clamp(score - i * pick(username, `gap${i}`, 4, 9) + 6);
     const tier = tierFor(accountScore);
     return {
       handle: `@${handle}`,
+      name: handle.charAt(0).toUpperCase() + handle.slice(1),
       score: accountScore,
       label: `${tier.label.toUpperCase()}`,
       emoji: tier.emoji,
+      connectionType: CONNECTION_TYPES[pick(username, `conn${i}`, 0, CONNECTION_TYPES.length - 1)]!,
+      hook: HOOKS[pick(username, `hook${i}`, 0, HOOKS.length - 1)]!,
     };
   });
 }
+
 
 const ATTENTION_TYPES = [
   {
