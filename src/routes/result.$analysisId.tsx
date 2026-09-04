@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Header } from "@/components/attention/Header";
 import { ScoreCard } from "@/components/attention/ScoreCard";
 import { SignalCard } from "@/components/attention/SignalCard";
-import { AccountCard } from "@/components/attention/AccountCard";
 import { Paywall } from "@/components/attention/Paywall";
 import { ErrorMessage } from "@/components/attention/ErrorMessage";
 import { getFreeResult } from "@/lib/attention.functions";
@@ -83,7 +82,6 @@ function ResultPage() {
         <ScoreCard
           score={result.score}
           label={result.tier.label}
-          emoji={result.tier.emoji}
           handle={result.username}
         />
 
@@ -106,7 +104,22 @@ function ResultPage() {
 
         <section className="space-y-3">
           <h2 className="font-display text-base font-bold">Top attention accounts (demo)</h2>
-          <AccountCard account={result.previewAccount} />
+          <div className="card-surface flex items-center gap-3 p-4">
+            <span
+              aria-hidden
+              className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary font-display text-lg font-bold"
+            >
+              {result.topInitial}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">
+                Name starts with {result.topInitial}. 👀
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                Attention score {result.topScore} — unlock to reveal who.
+              </p>
+            </div>
+          </div>
           {Array.from({ length: result.lockedAccountCount }).map((_, i) => (
             <div
               key={`locked-${i}`}
@@ -153,7 +166,7 @@ function ResultPage() {
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       <Header />
