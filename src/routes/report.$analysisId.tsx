@@ -1,41 +1,54 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/attention/Header";
-import { ScoreCard } from "@/components/attention/ScoreCard";
 import { SignalCard } from "@/components/attention/SignalCard";
-import { AccountCard } from "@/components/attention/AccountCard";
 import { ReportSection } from "@/components/attention/ReportSection";
 import { ShareCard } from "@/components/attention/ShareCard";
+import { SecondaryReports } from "@/components/attention/SecondaryReports";
 import { ErrorMessage } from "@/components/attention/ErrorMessage";
 import { getFullReport } from "@/lib/attention.functions";
 import { getSessionToken } from "@/lib/session";
-import type { AnalysisResult } from "@/lib/analysis/types";
+import { SIGNAL_LABELS } from "@/lib/analysis/labels";
+import type { AnalysisResult, DimensionKey } from "@/lib/analysis/types";
 import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/report/$analysisId")({
   head: () => ({
     meta: [
-      { title: "Your Complete Social Attention Report — AttentionAI" },
+      { title: "Attention Insights — Your #1 Reveal | AttentionAI" },
       {
         name: "description",
         content:
-          "The full AttentionAI report: attention overview, breakdown, top signals, relationship interest, momentum and your social attention type.",
+          "Your unlocked Attention Insights report: the #1 reveal, quick verdict, five signal breakdowns, connection type and a shareable score card.",
       },
-      { property: "og:title", content: "Your Complete Social Attention Report" },
+      { property: "og:title", content: "Attention Insights — Your #1 Reveal" },
       {
         property: "og:description",
-        content: "Attention overview, breakdown, top signals, momentum and attention type.",
+        content: "The reveal, the five signals, the connection type and the final verdict.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ReportPage,
 });
 
+const ORDER: DimensionKey[] = [
+  "engagement",
+  "recency",
+  "frequency",
+  "consistency",
+  "momentum",
+];
+
 function ReportPage() {
   const { analysisId } = Route.useParams();
   const navigate = useNavigate();
   const [state, setState] = useState<
-    { kind: "loading" } | { kind: "locked" } | { kind: "error"; message: string } | { kind: "ready"; report: AnalysisResult }
+    | { kind: "loading" }
+    | { kind: "locked" }
+    | { kind: "error"; message: string }
+    | { kind: "ready"; report: AnalysisResult }
   >({ kind: "loading" });
 
   useEffect(() => {
@@ -89,7 +102,7 @@ function ReportPage() {
         <div className="card-surface space-y-4 p-6 text-center">
           <h1 className="font-display text-xl font-bold">This report is locked</h1>
           <p className="text-sm text-muted-foreground">
-            Complete the one-time ₹99 unlock to view your full Social Attention Report.
+            Complete the one-time ₹99 unlock to view your Attention Insights report.
           </p>
           <button
             type="button"
@@ -104,80 +117,140 @@ function ReportPage() {
   }
 
   const result = state.report;
+  const [top, ...rest] = result.topAccounts;
+  if (!top) {
+    return (
+      <Shell>
+        <ErrorMessage message="This report is incomplete. Please start a new analysis." />
+      </Shell>
+    );
+  }
+
+  // Presentation-only derivation — the underlying signal values are unchanged.
+  const ranked = [...ORDER].sort((a, b) => result.dimensions[b] - result.dimensions[a]);
+  const [first, second] = ranked as [DimensionKey, DimensionKey];
 
   return (
     <div className="min-h-screen">
       <Header />
       <main className="mx-auto w-full max-w-md space-y-8 px-4 py-8">
         <header className="space-y-1 text-center">
-          <h1 className="font-display text-2xl font-bold leading-tight">
-            Your Complete Social Attention Report
-          </h1>
+          <p className="eyebrow">Attention Insights</p>
+          <h1 className="font-display text-2xl font-bold leading-tight">Your #1 reveal</h1>
           <p className="text-xs text-muted-foreground">{result.username} · demo analysis</p>
         </header>
 
-        <ScoreCard
-          score={result.score}
-          label={result.tier.label}
-          handle={result.username}
-        />
-
-        <ReportSection index={1} title="Attention Overview">
-          <p className="card-surface p-4 text-sm leading-relaxed text-muted-foreground">
-            {result.overview}
-          </p>
-        </ReportSection>
-
-        <ReportSection index={2} title="Attention Breakdown">
-          <div className="space-y-3">
-            <SignalCard label="Engagement" value={result.dimensions.engagement} />
-            <SignalCard label="Recency" value={result.dimensions.recency} />
-            <SignalCard label="Interaction Frequency" value={result.dimensions.frequency} />
-            <SignalCard label="Consistency" value={result.dimensions.consistency} />
-            <SignalCard label="Momentum" value={result.dimensions.momentum} />
+        {/* 1 — the reveal */}
+        <section className="card-surface bg-warm rise-in space-y-4 p-7 text-center">
+          <p className="eyebrow">The name you were waiting for</p>
+          <span
+            aria-hidden
+            className="mx-auto grid size-16 place-items-center rounded-full bg-secondary font-display text-2xl font-bold"
+          >
+            {top.name.charAt(0).toUpperCase()}
+          </span>
+          <p className="text-gradient font-display text-4xl font-bold leading-none">{top.name}</p>
+          <div>
+            <span className="font-display text-3xl font-semibold tabular-nums">{top.score}</span>
+            <span className="ml-0.5 text-sm text-muted-foreground">/100</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Attention Score</span>
           </div>
-        </ReportSection>
+          <p className="text-sm text-muted-foreground">{top.connectionType}</p>
+        </section>
 
-        <ReportSection index={3} title="Highest Attention Signals">
-          <div className="space-y-3">
-            {result.topAccounts.map((account) => (
-              <AccountCard key={account.handle} account={account} />
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Demo identities only. This does not indicate that these accounts viewed your profile.
-          </p>
-        </ReportSection>
-
-        <ReportSection index={4} title="Relationship Interest">
-          <div className="card-surface space-y-2 p-4">
-            <p className="font-display text-2xl font-bold">{result.relationshipInterest}/100</p>
-            <p className="text-sm text-muted-foreground">
-              This is an AI interpretation of available demo signals — not a verified psychological
-              or relationship assessment.
-            </p>
-          </div>
-        </ReportSection>
-
-        <ReportSection index={5} title="Attention Momentum">
-          <div className="card-surface space-y-2 p-4">
-            <p className="font-display text-2xl font-bold text-success">
-              +{result.momentumPercent}%
+        {/* 2 — quick verdict */}
+        <ReportSection index={1} title="Quick Verdict">
+          <div className="card-surface space-y-1 p-4">
+            <p className="font-display text-lg font-bold">
+              {top.emoji} {top.label}
             </p>
             <p className="text-sm text-muted-foreground">
-              Your recent attention signals are trending upward in this demo analysis.
+              There's something interesting about this connection — {top.hook.toLowerCase()}
             </p>
           </div>
         </ReportSection>
 
-        <ReportSection index={6} title="Social Attention Type">
+        {/* 3 — signals */}
+        <ReportSection index={2} title="Signal Breakdown">
+          <div className="space-y-3">
+            {ORDER.map((key) => {
+              const meta = SIGNAL_LABELS[key];
+              return (
+                <SignalCard
+                  key={key}
+                  emoji={meta.emoji}
+                  label={meta.name}
+                  note={meta.note}
+                  value={result.dimensions[key]}
+                />
+              );
+            })}
+          </div>
+        </ReportSection>
+
+        {/* 4 — why they stand out */}
+        <ReportSection index={3} title="Why They Stand Out">
+          <ul className="card-surface space-y-2 p-4 text-sm">
+            <li className="flex gap-2">
+              <span aria-hidden>{SIGNAL_LABELS[first].emoji}</span>
+              <span>
+                <strong>{SIGNAL_LABELS[first].name}</strong> is your strongest signal at{" "}
+                {result.dimensions[first]}/100.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span aria-hidden>{SIGNAL_LABELS[second].emoji}</span>
+              <span>
+                <strong>{SIGNAL_LABELS[second].name}</strong> backs it up at{" "}
+                {result.dimensions[second]}/100.
+              </span>
+            </li>
+            <li className="flex gap-2">
+              <span aria-hidden>✨</span>
+              <span>{top.hook}</span>
+            </li>
+          </ul>
+        </ReportSection>
+
+        {/* 5 — connection type */}
+        <ReportSection index={4} title="Connection Type">
           <div className="card-surface space-y-2 p-5">
-            <p className="text-gradient font-display text-2xl font-bold">
-              {result.attentionType.name}
+            <p className="text-gradient font-display text-2xl font-bold">{top.connectionType}</p>
+            <p className="text-sm text-muted-foreground">
+              Whether it's curiosity, habit, or something more… that's the part we can't know for
+              sure.
             </p>
-            <p className="text-sm text-muted-foreground">{result.attentionType.description}</p>
           </div>
         </ReportSection>
+
+        {/* 6 — interpretation */}
+        <ReportSection index={5} title="What This Means">
+          <div className="card-surface space-y-2 p-4">
+            <p className="text-sm">
+              {top.name} keeps showing up where your attention signals are loudest. That pattern is
+              consistent — not accidental.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Reality check: this is a demo interpretation of simulated signals. It does not mean
+              this person viewed your profile, and it is not a psychological or relationship
+              assessment.
+            </p>
+          </div>
+        </ReportSection>
+
+        {/* 7 — final verdict */}
+        <ReportSection index={6} title="Final Verdict">
+          <div className="card-surface bg-warm space-y-2 p-5 text-center">
+            <p className="font-display text-xl font-bold">
+              {top.name} is the one paying attention. 👀
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Score {top.score}/100 · {top.connectionType}
+            </p>
+          </div>
+        </ReportSection>
+
+        <SecondaryReports accounts={rest} />
 
         <ShareCard
           score={result.score}
