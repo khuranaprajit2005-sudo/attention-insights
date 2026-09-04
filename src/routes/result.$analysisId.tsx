@@ -105,7 +105,22 @@ function ResultPage() {
 
         <section className="space-y-3">
           <h2 className="font-display text-base font-bold">Top attention accounts (demo)</h2>
-          <AccountCard account={result.previewAccount} />
+          <div className="card-surface flex items-center gap-3 p-4">
+            <span
+              aria-hidden
+              className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary font-display text-lg font-bold"
+            >
+              {result.topInitial}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">
+                Name starts with {result.topInitial}. 👀
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                Attention score {result.topScore} — unlock to reveal who.
+              </p>
+            </div>
+          </div>
           {Array.from({ length: result.lockedAccountCount }).map((_, i) => (
             <div
               key={`locked-${i}`}
