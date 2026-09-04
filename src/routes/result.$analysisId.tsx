@@ -82,7 +82,6 @@ function ResultPage() {
         <ScoreCard
           score={result.score}
           label={result.tier.label}
-          emoji={result.tier.emoji}
           handle={result.username}
         />
 
