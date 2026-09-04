@@ -5,42 +5,76 @@ interface Props {
   onShareClicked?: () => void;
 }
 
+/** Share text never contains any paid identity data — score only. */
+function buildShareText(score: number): string {
+  return [
+    "MY ATTENTION SCORE",
+    "",
+    `${score}/100 👀`,
+    "",
+    '"Someone in my circle is definitely paying attention…"',
+    "",
+    '"Think you know who? 👀"',
+  ].join("\n");
+}
+
 export function ShareCard({ score, onShareClicked }: Props) {
   const [note, setNote] = useState<string | null>(null);
-  const text = `MY AI ATTENTION SCORE 🔥\n\n${score}/100\n\nApparently people are paying attention 👀\n\nCheck yours.`;
+  const text = buildShareText(score);
 
-  async function copy() {
-    onShareClicked?.();
+  async function copyToClipboard(): Promise<boolean> {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
-        setNote("Copied to clipboard.");
-        return;
+        return true;
       }
-      throw new Error("no clipboard");
     } catch {
-      setNote("Copying is not available here — select and copy the text above.");
+      /* fall through to the manual fallback below */
     }
+    try {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(area);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function copy() {
+    onShareClicked?.();
+    setNote((await copyToClipboard()) ? "Copied to clipboard." : "Select the text above to copy it.");
   }
 
   async function share() {
     onShareClicked?.();
-    try {
-      if (navigator.share) {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
         await navigator.share({ title: "AttentionAI", text });
-        setNote("Share sheet opened.");
+        setNote("Shared.");
         return;
+      } catch {
+        // User dismissed the sheet or sharing is blocked — fall back to copy.
       }
-      await copy();
-    } catch {
-      setNote("Sharing was cancelled.");
     }
+    setNote((await copyToClipboard()) ? "Copied to clipboard." : "Select the text above to copy it.");
   }
 
   return (
-    <div className="card-surface space-y-4 p-6">
-      <h2 className="font-display text-lg font-bold">Apne friend ka score bhi check karo 👀</h2>
-      <pre className="whitespace-pre-wrap rounded-2xl bg-secondary/60 p-4 text-sm font-sans">{text}</pre>
+    <div className="card-surface bg-warm space-y-4 p-6">
+      <p className="eyebrow">Share card</p>
+      <h2 className="font-display text-lg font-bold leading-tight">
+        Apne friend ka score bhi check karo 👀
+      </h2>
+      <pre className="whitespace-pre-wrap rounded-2xl bg-secondary/60 p-4 text-center text-sm font-sans leading-relaxed">
+        {text}
+      </pre>
       <div className="flex flex-col gap-2 sm:flex-row">
         <button type="button" className="btn-secondary flex-1" onClick={copy}>
           Copy Result
@@ -49,7 +83,9 @@ export function ShareCard({ score, onShareClicked }: Props) {
           Share My Result
         </button>
       </div>
-      {note ? <p className="text-center text-xs text-muted-foreground">{note}</p> : null}
+      <p className="text-center text-xs text-muted-foreground">
+        {note ?? "Your share card never includes any name."}
+      </p>
     </div>
   );
 }
