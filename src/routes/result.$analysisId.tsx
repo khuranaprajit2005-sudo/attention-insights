@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Header } from "@/components/attention/Header";
 import { ScoreCard } from "@/components/attention/ScoreCard";
 import { SignalCard } from "@/components/attention/SignalCard";
-import { AccountCard } from "@/components/attention/AccountCard";
 import { Paywall } from "@/components/attention/Paywall";
 import { ErrorMessage } from "@/components/attention/ErrorMessage";
 import { getFreeResult } from "@/lib/attention.functions";
